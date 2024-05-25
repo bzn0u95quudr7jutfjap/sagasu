@@ -32,11 +32,13 @@ function _reduce($f, $i) {
 // Corpo principale
 
 function _find($directory) {
-  $depth = 12;
-  $glob = $directory . '/' . str_repeat('{,*/', $depth) . str_repeat('}', $depth) . '*';
-  $glob = _filter(fn ($a) => !is_dir($a))(glob($glob, GLOB_BRACE));
-  $glob = array_combine($glob, $glob);
-  return $glob;
+  $depth = fn ($f, $d, $a) => $d > 0 ? $f($f, $d - 1, "{,*/$a}") : $a;
+  return _reduce(fn ($a, $f) => $f($a), $directory)([
+    fn ($d) => "$d/{$depth($depth, 0, '')}/*",
+    fn ($p) => glob($p, GLOB_BRACE),
+    _filter(fn ($a) => !is_dir($a)),
+    fn ($a) => array_combine($a, $a),
+  ]);
 }
 
 function findcontains($r, $g) {
