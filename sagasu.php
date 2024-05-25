@@ -29,8 +29,11 @@ function preg($r, $s) {
 
 function findcontains($r, $g) {
   return array_filter(
-    array_map(fn ($a) => preg($r, file_get_contents($a))[0], $g,),
-    fn ($a) => count($a),
+    array_map(
+      fn ($a) => preg_grep("/.*$r.*/", explode("\n", file_get_contents($a))),
+      $g
+    ),
+    fn ($a) => count($a) > 0,
   );
 }
 
