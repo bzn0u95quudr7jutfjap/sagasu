@@ -42,9 +42,8 @@ function find($directory, $pattern) {
 
 function replace($r, $g) {
   $rk = array_keys($r);
-  foreach ($g as $file) {
-    file_put_contents($file, preg_replace($rk, $r, file_get_contents($file)));
-  }
+  $f = fn ($file) => file_put_contents($file, preg_replace($rk, $r, file_get_contents($file)));
+  return _map($f)($g);
 }
 
 function contains($r, $g) {
