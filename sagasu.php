@@ -50,7 +50,7 @@ function contains($r, $g) {
 
 $flags = getopt('p:d:r:q');
 if (!array_key_exists('r', $flags)) {
-  die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>']");
+  die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>'] [-q]");
 }
 $regex = $flags['r'];
 $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
