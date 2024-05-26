@@ -34,8 +34,9 @@ function _reduce($f, $i) {
 function find($directory, $pattern) {
   $depth = fn ($f, $d, $a) => $d > 0 ? $f($f, $d - 1, "{,*/$a}") : $a;
   $files = glob("$directory/{$depth($depth, 12, '')}/$pattern", GLOB_BRACE);
-  $files = array_combine($files, $files);
   $files = _filter(fn ($a) => !is_dir($a))($files);
+  $files = _map(fn ($a) => str_replace('//', '/', $a))($files);
+  $files = array_combine($files, $files);
   return $files;
 }
 
