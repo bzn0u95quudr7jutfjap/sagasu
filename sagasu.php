@@ -31,27 +31,31 @@ function _reduce($f, $i) {
 
 // Corpo principale
 
-function find($directory) {
+function find($directory, $pattern) {
   $depth = fn ($f, $d, $a) => $d > 0 ? $f($f, $d - 1, "{,*/$a}") : $a;
-  return _reduce(fn ($a, $f) => $f($a), $directory)([
-    fn ($d) => "$d/{$depth($depth, 0, '')}/*",
-    fn ($p) => glob($p, GLOB_BRACE),
-    _filter(fn ($a) => !is_dir($a)),
-    fn ($a) => array_combine($a, $a),
-  ]);
+  $files = glob("$directory/{$depth($depth, 12, '')}/$pattern", GLOB_BRACE);
+  $files = array_combine($files, $files);
+  $files = _filter(fn ($a) => !is_dir($a))($files);
+  return $files;
 }
 
 function contains($r, $g) {
   return _reduce(fn ($a, $f) => $f($a), $g)([
-    _map(fn ($a) => preg_grep("/.*$r.*/", explode("\n", file_get_contents($a))),),
+    _map(fn ($a) => preg_grep($r, explode("\n", file_get_contents($a)))),
     _filter(fn ($a) => count($a) > 0),
   ]);
 }
 
 // Main
 
-$a = getopt('p:d:', ['pattern:', 'directory:',]);
+$flags = getopt('p:d:r:');
+if (!array_key_exists('r', $flags)) {
+  die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>']");
+}
+$regex = $flags['r'];
+$pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
+$directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
 
 print_r(
-  contains($a['p'], find(array_key_exists('d', $a) ? $a['d'] : '.'))
+  contains($regex, find($directory, $pattern))
 );
