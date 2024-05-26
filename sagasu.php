@@ -55,7 +55,7 @@ if (!array_key_exists('r', $flags)) {
 $regex = $flags['r'];
 $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
 $directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
-$quiet = array_key_exists('q', $flags) ? fn ($a) => array_keys($a) : fn ($a) => $a;
+$quiet = array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a;
 
 print_r(
   $quiet(contains($regex, find($directory, $pattern)))
