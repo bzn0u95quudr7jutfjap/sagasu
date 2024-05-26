@@ -40,6 +40,13 @@ function find($directory, $pattern) {
   return $files;
 }
 
+function replace($r, $g) {
+  $rk = array_keys($r);
+  foreach ($g as $file) {
+    file_put_contents($file, preg_replace($rk, $r, file_get_contents($file)));
+  }
+}
+
 function contains($r, $g) {
   return _reduce(fn ($a, $f) => $f($a), $g)([
     _map(fn ($a) => preg_grep($r, explode("\n", file_get_contents($a)))),
@@ -51,13 +58,30 @@ function contains($r, $g) {
 
 $flags = getopt('p:d:r:q');
 if (!array_key_exists('r', $flags)) {
-  die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>'] [-q]");
+  die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>'] [-q]\n");
 }
-$regex = $flags['r'];
 $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
 $directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
 $quiet = array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a;
+$regex = $flags['r'];
+if (strpos('s/', $regex) == 0) {
+  $regex = explode(';', $regex);
+  $regex = _filter(fn ($a) => strlen($a) > 0)($regex);
+  $regex_old = $regex;
+  $regex = _map(function ($a) {
+    preg_match_all('/s(\\/.*?[^\\\\]?\\/)(.*?[^\\\\])?\\//', $a, $matches);
+    return $matches;
+  })($regex);
+  $regex = _map(fn ($a) => [$a[1][0], $a[2][0]])($regex);
+  $regex = array_combine(array_column($regex, 0), array_column($regex, 1));
+  if (count($regex) == count($regex_old)) {
+    die("エラー: Regex invalida\n");
+  }
+  $function = 'replace';
+} else {
+  $function = 'contains';
+}
 
 print_r(
-  $quiet(contains($regex, find($directory, $pattern)))
+  $quiet($function($regex, find($directory, $pattern)))
 );
