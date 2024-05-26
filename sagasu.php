@@ -48,14 +48,15 @@ function contains($r, $g) {
 
 // Main
 
-$flags = getopt('p:d:r:');
+$flags = getopt('p:d:r:q');
 if (!array_key_exists('r', $flags)) {
   die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>']");
 }
 $regex = $flags['r'];
 $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
 $directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
+$quiet = array_key_exists('q', $flags) ? fn ($a) => array_keys($a) : fn ($a) => $a;
 
 print_r(
-  contains($regex, find($directory, $pattern))
+  $quiet(contains($regex, find($directory, $pattern)))
 );
