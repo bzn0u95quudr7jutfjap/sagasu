@@ -63,7 +63,7 @@ $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
 $directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
 $quiet = array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a;
 $regex = $flags['r'];
-if (strpos('s/', $regex) == 0) {
+if (strpos('s/', $regex) === 0) {
   $regex = explode(';', $regex);
   $regex = _filter(fn ($a) => strlen($a) > 0)($regex);
   $regex_old = $regex;
