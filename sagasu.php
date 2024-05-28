@@ -55,32 +55,51 @@ function contains($r, $g) {
 
 // Main
 
-$flags = getopt('p:d:r:q');
+$flags = getopt('p:d:g:r:s:q');
 if (!array_key_exists('r', $flags)) {
-  die("使い方: sagasu.php -r <REGEX> [-p <PATTERN>] [-d '<DIRECTORY>'] [-q]\n");
+  die(<<<'EOF'
+
+        使い方:
+          
+          Stampa i file presenti in DIRECTORY il cui nome corrisponde a PATTERN.
+          sagasu.php [-d <DIRECTORY>] [-p <PATTERN>]
+
+          Stampa i file il contenuto corrisponde con REGEX
+          sagasu.php -g <REGEX> [-q] [-d <DIRECTORY>] [-p <PATTERN>]
+
+          Sostituisce REGEX con SUBS
+          sagasu.php -r <REGEX> -s <SUBS> [-d <DIRECTORY>] [-p <PATTERN>]
+
+      EOF);
 }
+
+if (array_key_exists('g', $flags) and array_key_exists('r', $flags)) {
+  echo "エラー: opzioni -g e -r non consentite assieme\n";
+  die(4);
+}
+
 $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
 $directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
 $quiet = array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a;
-$regex = $flags['r'];
-if (strpos('s/', $regex) === 0) {
-  $regex = explode(';', $regex);
-  $regex = _filter(fn ($a) => strlen($a) > 0)($regex);
-  $regex_old = $regex;
-  $regex = _map(function ($a) {
-    preg_match_all('/s(\\/.*?[^\\\\]?\\/)(.*?[^\\\\])?\\//', $a, $matches);
-    return $matches;
-  })($regex);
-  $regex = _map(fn ($a) => [$a[1][0], $a[2][0]])($regex);
-  $regex = array_combine(array_column($regex, 0), array_column($regex, 1));
-  if (count($regex) == count($regex_old)) {
-    die("エラー: Regex invalida\n");
-  }
-  $function = 'replace';
-} else {
-  $function = 'contains';
+
+if (!array_key_exists('g', $flags) and !array_key_exists('r', $flags)) {
+  print_r(
+    array_keys(find($directory, $pattern))
+  );
 }
 
-print_r(
-  $quiet($function($regex, find($directory, $pattern)))
-);
+if (array_key_exists('g', $flags)) {
+  $regex = $flags['g'];
+  print_r(
+    $quiet(constant($regex, find($directory, $pattern)))
+  );
+}
+
+if (array_key_exists('r', $flags)) {
+  if (array_key_exists('s', $flags)) {
+    $regex = [$flags['r'] => $flags['s']];
+    $quiet(replace($regex, find($directory, $pattern)));
+  }
+  echo "エラー: opzione -s mancante per l'opzione -r\n";
+  die(8);
+}
