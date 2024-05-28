@@ -56,7 +56,7 @@ function contains($r, $g) {
 // Main
 
 $flags = getopt('p:d:g:r:s:q');
-if (!array_key_exists('r', $flags) or !array_key_exists('g', $flags)) {
+if (!array_key_exists('r', $flags) and !array_key_exists('g', $flags)) {
   die(<<<'EOF'
 
         使い方:
