@@ -92,7 +92,7 @@ if (!array_key_exists('g', $flags) and !array_key_exists('r', $flags)) {
 if (array_key_exists('g', $flags)) {
   $regex = "/{$flags['g']}/";
   print_r(
-    $quiet(constant($regex, find($directory, $pattern)))
+    $quiet(contains($regex, find($directory, $pattern)))
   );
 }
 
