@@ -70,6 +70,7 @@ if (!array_key_exists('r', $flags)) {
           Sostituisce REGEX con SUBS
           sagasu.php -r <REGEX> -s <SUBS> [-d <DIRECTORY>] [-p <PATTERN>]
 
+
       EOF);
 }
 
