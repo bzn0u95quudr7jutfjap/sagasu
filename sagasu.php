@@ -56,7 +56,7 @@ function contains($r, $g) {
 // Main
 
 $flags = getopt('p:d:g:r:s:q');
-if (!array_key_exists('r', $flags)) {
+if (!array_key_exists('r', $flags) or !array_key_exists('g', $flags)) {
   die(<<<'EOF'
 
         使い方:
@@ -90,7 +90,7 @@ if (!array_key_exists('g', $flags) and !array_key_exists('r', $flags)) {
 }
 
 if (array_key_exists('g', $flags)) {
-  $regex = $flags['g'];
+  $regex = "/{$flags['g']}/";
   print_r(
     $quiet(constant($regex, find($directory, $pattern)))
   );
