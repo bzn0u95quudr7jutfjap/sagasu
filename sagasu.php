@@ -98,9 +98,10 @@ if (array_key_exists('g', $flags)) {
 
 if (array_key_exists('r', $flags)) {
   if (array_key_exists('s', $flags)) {
-    $regex = [$flags['r'] => $flags['s']];
+    $regex = ["/{$flags['r']}/" => $flags['s']];
     $quiet(replace($regex, find($directory, $pattern)));
+  } else {
+    echo "エラー: opzione -s mancante per l'opzione -r\n";
+    die(8);
   }
-  echo "エラー: opzione -s mancante per l'opzione -r\n";
-  die(8);
 }
