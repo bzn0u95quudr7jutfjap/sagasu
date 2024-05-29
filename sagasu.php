@@ -41,8 +41,7 @@ function find($directory, $pattern) {
 }
 
 function replace($r, $g) {
-  $rk = array_keys($r);
-  $f = fn ($file) => file_put_contents($file, preg_replace($rk, $r, file_get_contents($file)));
+  $f = fn ($file) => file_put_contents($file, preg_replace(array_keys($r), $r, file_get_contents($file)));
   return _map($f)($g);
 }
 
@@ -55,12 +54,12 @@ function contains($r, $g) {
 
 // Main
 
-$flags = getopt('p:d:g:r:s:q');
-if (!array_key_exists('r', $flags) and !array_key_exists('g', $flags)) {
+$flags = getopt('hp:d:g:s:q');
+if (array_key_exists('h', $flags)) {
   die(<<<'EOF'
 
         使い方:
-          
+
           Stampa i file presenti in DIRECTORY il cui nome corrisponde a PATTERN.
           sagasu.php [-d <DIRECTORY>] [-p <PATTERN>]
 
@@ -68,40 +67,25 @@ if (!array_key_exists('r', $flags) and !array_key_exists('g', $flags)) {
           sagasu.php -g <REGEX> [-q] [-d <DIRECTORY>] [-p <PATTERN>]
 
           Sostituisce REGEX con SUBS
-          sagasu.php -r <REGEX> -s <SUBS> [-d <DIRECTORY>] [-p <PATTERN>]
+          sagasu.php -g <REGEX> -s <SUBS> [-d <DIRECTORY>] [-p <PATTERN>]
 
+          Stampa questo messaggio
+          sagasu.php -h
+          
 
       EOF);
-}
-
-if (array_key_exists('g', $flags) and array_key_exists('r', $flags)) {
-  echo "エラー: opzioni -g e -r non consentite assieme\n";
-  die(4);
 }
 
 $pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
 $directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
 $quiet = array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a;
 
-if (!array_key_exists('g', $flags) and !array_key_exists('r', $flags)) {
-  print_r(
-    array_keys(find($directory, $pattern))
-  );
-}
-
-if (array_key_exists('g', $flags)) {
-  $regex = "/{$flags['g']}/";
-  print_r(
-    $quiet(contains($regex, find($directory, $pattern)))
-  );
-}
-
-if (array_key_exists('r', $flags)) {
-  if (array_key_exists('s', $flags)) {
-    $regex = ["/{$flags['r']}/" => $flags['s']];
-    $quiet(replace($regex, find($directory, $pattern)));
+if (!array_key_exists('g', $flags)) {
+  print_r(array_keys(find($directory, $pattern)));
+} else {
+  if (!array_key_exists('s', $flags)) {
+    print_r($quiet(contains("/{$flags['s']}/", find($directory, $pattern))));
   } else {
-    echo "エラー: opzione -s mancante per l'opzione -r\n";
-    die(8);
+    $quiet(replace(["/{$flags['g']}/" => $flags['s']], find($directory, $pattern)));
   }
 }
