@@ -29,6 +29,10 @@ function _reduce($f, $i) {
   return fn ($a) => array_reduce($a, $f, $i);
 }
 
+function array_get_else($key, $array, $else) {
+  return array_key_exists($key, $array) ? $array[$key] : $else;
+}
+
 // Corpo principale
 
 function find($directory, $pattern) {
@@ -66,8 +70,8 @@ if (array_key_exists('h', $flags)) {
           Stampa i file il contenuto corrisponde con REGEX
           sagasu.php -g <REGEX> [-q] [-d <DIRECTORY>] [-p <PATTERN>]
 
-          Sostituisce REGEX con SUBS
-          sagasu.php -g <REGEX> -s <SUBS> [-d <DIRECTORY>] [-p <PATTERN>]
+          Sostituisce REGEX con SUBST
+          sagasu.php -g <REGEX> -s <SUBST> [-d <DIRECTORY>] [-p <PATTERN>]
 
           Stampa questo messaggio
           sagasu.php -h
@@ -76,16 +80,10 @@ if (array_key_exists('h', $flags)) {
       EOF);
 }
 
-$pattern = array_key_exists('p', $flags) ? $flags['p'] : '*';
-$directory = array_key_exists('d', $flags) ? $flags['d'] : '.';
-$quiet = array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a;
+$files = find(array_get_else('d', $flags, '.'), array_get_else('p', $flags, '*'));
 
-if (!array_key_exists('g', $flags)) {
-  print_r(array_keys(find($directory, $pattern)));
-} else {
-  if (!array_key_exists('s', $flags)) {
-    print_r($quiet(contains("/{$flags['s']}/", find($directory, $pattern))));
-  } else {
-    $quiet(replace(["/{$flags['g']}/" => $flags['s']], find($directory, $pattern)));
-  }
-}
+match (false) {
+  $grep = array_get_else('g', $flags, false) => print_r(array_keys($files)),
+  $subst = array_get_else('s', $flags, false) => print_r((array_key_exists('q', $flags) ? 'array_keys' : fn ($a) => $a)(contains("/$grep/", $files))),
+  default => replace(["/$grep/" => $subst], $files),
+};
