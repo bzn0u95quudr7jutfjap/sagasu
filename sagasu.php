@@ -35,9 +35,9 @@ function array_get_else($key, $array, $else) {
 
 // Corpo principale
 
-function find($directory, $pattern) {
+function find($directory, $pattern, $maxdepth = 12) {
   $depth = fn ($f, $d, $a) => $d > 0 ? $f($f, $d - 1, "{,*/$a}") : $a;
-  $files = glob("$directory/{$depth($depth, 12, '')}/$pattern", GLOB_BRACE);
+  $files = glob("$directory/{$depth($depth, $maxdepth, '')}/$pattern", GLOB_BRACE);
   $files = _filter(fn ($a) => !is_dir($a))($files);
   $files = _map(fn ($a) => str_replace('//', '/', $a))($files);
   $files = array_combine($files, $files);
